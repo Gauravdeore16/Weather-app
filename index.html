@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weather App</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      padding: 2rem;
+      background: linear-gradient(to right, #83a4d4, #b6fbff);
+      transition: background 0.5s ease-in-out;
+    }
+    input {
+      padding: 10px;
+      width: 200px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      margin-left: 10px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #weatherResult {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    #loading {
+      display: none;
+      font-weight: bold;
+      color: #007bff;
+      margin-top: 10px;
+    }
+    img {
+      width: 100px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🌦️ Simple Weather App</h1>
+  <input type="text" id="cityInput" placeholder="Enter city name" />
+  <button onclick="getWeather()">Get Weather</button>
+
+  <div id="loading">🔄 Loading weather data...</div>
+  <div id="weatherResult"></div>
+
+  <script>
+    async function getWeather() {
+      const city = document.getElementById('cityInput').value;
+      const resultDiv = document.getElementById('weatherResult');
+      const loadingDiv = document.getElementById('loading');
+
+      if (!city) {
+        resultDiv.innerHTML = "⛔ Please enter a city name!";
+        return;
+      }
+
+      resultDiv.innerHTML = "";
+      loadingDiv.style.display = "block";
+
+      const apiKey = "be27fe5dc606456eb4372ce8ba4c80b6";  // <-- Replace with your API key
+      const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+
+      try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+        loadingDiv.style.display = "none";
+
+        if (data.cod === "404") {
+          resultDiv.innerHTML = "❌ City not found!";
+        } else {
+          const temp = data.main.temp;
+          const weather = data.weather[0].main;
+          const icon = data.weather[0].icon;
+          const humidity = data.main.humidity;
+          const wind = data.wind.speed;
+          const feelsLike = data.main.feels_like;
+
+          updateBackground(weather);
+
+          resultDiv.innerHTML = `
+            <h2>${data.name}</h2>
+            <p><strong>${temp}°C</strong> | ${weather}</p>
+            <img src="https://openweathermap.org/img/wn/${icon}@2x.png" alt="${weather}">
+            <p>💧 Humidity: ${humidity}%</p>
+            <p>🌬️ Wind Speed: ${wind} m/s</p>
+            <p>🌡️ Feels Like: ${feelsLike}°C</p>
+          `;
+        }
+      } catch (error) {
+        loadingDiv.style.display = "none";
+        resultDiv.innerHTML = "⚠️ Something went wrong!";
+        console.error(error);
+      }
+    }
+
+    function updateBackground(condition) {
+      const body = document.body;
+      switch (condition.toLowerCase()) {
+        case 'clear':
+          body.style.background = 'linear-gradient(to right, #fceabb, #f8b500)';
+          break;
+        case 'clouds':
+          body.style.background = 'linear-gradient(to right, #d7d2cc, #304352)';
+          break;
+        case 'rain':
+        case 'drizzle':
+          body.style.background = 'linear-gradient(to right, #4e54c8, #8f94fb)';
+          break;
+        case 'thunderstorm':
+          body.style.background = 'linear-gradient(to right, #000000, #434343)';
+          break;
+        case 'snow':
+          body.style.background = 'linear-gradient(to right, #e0eafc, #cfdef3)';
+          break;
+        default:
+          body.style.background = 'linear-gradient(to right, #83a4d4, #b6fbff)';
+          break;
+      }
+    }
+  </script>
+</body>
+</html>
